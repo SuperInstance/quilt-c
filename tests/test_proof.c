@@ -100,6 +100,68 @@ static void test_proof_ring_wraparound(void)
     CHECK(quilt_proof_verify(&p) == 1, "ring valid after wraparound");
 }
 
+static void test_proof_hash_distinct(void)
+{
+    printf("== test_proof_hash_distinct ==\n");
+    /* Different values must hash to different state_hashes. */
+    quilt_proof_t p;
+    quilt_proof_entry_t ring[8];
+    quilt_proof_init(&p, ring);
+    /* Two values: 1 and 2. Their state_hashes must differ. */
+    quilt_value_t v1 = quilt_v_int(1);
+    quilt_value_t v2 = quilt_v_int(2);
+    quilt_value_t v3 = quilt_v_bool(0);
+    quilt_proof_append(&p, &v1, 1, 1);
+    quilt_proof_append(&p, &v2, 2, 2);
+    quilt_proof_append(&p, &v3, 3, 3);
+    CHECK(memcmp(p.ring[0].state_hash, p.ring[1].state_hash, 32) != 0,
+          "int(1) and int(2) hash differently");
+    CHECK(memcmp(p.ring[0].state_hash, p.ring[2].state_hash, 32) != 0,
+          "int(1) and bool(0) hash differently");
+    CHECK(quilt_proof_verify(&p) == 1, "chain still valid");
+}
+
+static void test_proof_with_secret(void)
+{
+    printf("== test_proof_with_secret ==\n");
+    /* With a secret, every entry's sig is non-zero. */
+    quilt_proof_t p;
+    quilt_proof_entry_t ring[8];
+    quilt_proof_init(&p, ring);
+    uint8_t sec[32];
+    for (int i = 0; i < 32; i++) sec[i] = (uint8_t)(i + 7);
+    CHECK(quilt_proof_set_secret(&p, sec) == 0, "set secret");
+    quilt_value_t s = quilt_v_int(42);
+    quilt_proof_append(&p, &s, 1, 1);
+    /* sig should be non-zero (HMAC) */
+    int sig_nonzero = 0;
+    for (int i = 0; i < 64; i++) if (p.ring[0].sig[i]) sig_nonzero = 1;
+    CHECK(sig_nonzero, "sig is non-zero with secret");
+    CHECK(quilt_proof_verify(&p) == 1, "chain valid (prev_hash link)");
+    CHECK(quilt_proof_verify_full(&p) == 1, "chain valid (full verify incl. sigs)");
+}
+
+static void test_proof_sig_tamper(void)
+{
+    printf("== test_proof_sig_tamper ==\n");
+    /* Tampering with a sig must fail verify_full. */
+    quilt_proof_t p;
+    quilt_proof_entry_t ring[8];
+    quilt_proof_init(&p, ring);
+    uint8_t sec[32];
+    for (int i = 0; i < 32; i++) sec[i] = (uint8_t)(i * 3 + 1);
+    quilt_proof_set_secret(&p, sec);
+    quilt_value_t s = quilt_v_int(100);
+    quilt_proof_append(&p, &s, 1, 1);
+    quilt_proof_append(&p, &s, 2, 2);
+    CHECK(quilt_proof_verify_full(&p) == 1, "valid before tamper");
+    /* Tamper entry 0's sig */
+    p.ring[0].sig[0] ^= 0xFF;
+    CHECK(quilt_proof_verify_full(&p) == 0, "verify_full fails after sig tamper");
+    /* But the prev_hash chain is still intact */
+    CHECK(quilt_proof_verify(&p) == 1, "prev_hash chain still valid");
+}
+
 int main(void)
 {
     printf("=== quilt-c: PROOF opcode (Phase 216 cutting-edge adoption #1) ===\n\n");
@@ -108,6 +170,9 @@ int main(void)
     test_proof_tamper_detection();
     test_proof_locate();
     test_proof_ring_wraparound();
+    test_proof_hash_distinct();
+    test_proof_with_secret();
+    test_proof_sig_tamper();
     printf("\n=== %d passed, %d failed ===\n", passed, failed);
     return failed == 0 ? 0 : 1;
 }

@@ -49,10 +49,22 @@ typedef struct {
     size_t count;                  /* entries written (saturates at cap) */
     /* The ed25519 public key used to sign entries; 32 bytes */
     uint8_t pub[32];
+    /* The ed25519 secret key (or HMAC secret in this C port); 32 bytes.
+     * On a real substrate (Workers, ESP32, CUDA) this comes from the
+     * platform's keyring. In this kernel-friendly C port the caller
+     * provides it. */
+    uint8_t sec[32];
+    /* A monotonically increasing nonce for the signature; prevents
+     * two identical (state, tick, version) triples from producing
+     * the same signature. */
+    uint64_t nonce;
 } quilt_proof_t;
 
 /* ── Lifecycle ──────────────────────────────────────────────────────── */
 int  quilt_proof_init(quilt_proof_t *p, quilt_proof_entry_t *ring);
+/* Set the secret key (32 bytes). After this, every append() fills the
+ * sig field. If sec is not set, sig remains zeroed (test mode). */
+int  quilt_proof_set_secret(quilt_proof_t *p, const uint8_t sec[32]);
 void quilt_proof_free(quilt_proof_t *p);
 
 /* Append one entry. The new entry's prev_hash is the previous entry's
@@ -69,6 +81,12 @@ int  quilt_proof_append(quilt_proof_t *p, const quilt_value_t *state,
 /* Verify the chain: prev_hash[i+1] == state_hash[i] for all i.
  * Returns 1 if valid, 0 if not. */
 int  quilt_proof_verify(const quilt_proof_t *p);
+
+/* Verify the chain AND every entry's signature (requires sec to
+ * be set; without sec, all sigs are zeroed and the function
+ * checks only the prev_hash links). Returns 1 if all valid, 0
+ * if any entry's sig or prev_hash is wrong. */
+int  quilt_proof_verify_full(const quilt_proof_t *p);
 
 /* Walk the chain and return the index of the entry whose tick
  * matches `t`, or (size_t)-1 if not present. */
