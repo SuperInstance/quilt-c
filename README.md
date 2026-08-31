@@ -264,3 +264,32 @@ Apache 2.0. See [LICENSE](./LICENSE).
 ---
 
 **The cell is a struct. The formula is a function pointer. The reactive engine is a recursive walk. The kernel is the runtime. C is the floor.**
+
+---
+
+## ✦ Build
+
+```sh
+make            # builds build/libquilt-c.a (a static library)
+make test       # compiles and runs the conformance + laws test suite
+```
+
+The 5+1 opcodes (`BIND / LINK / EFFECT / VIEW / TICK / FORGET`) and all 5 laws (BIND idempotence, LINK transitivity, VIEW purity, TICK monotonicity, FORGET completeness) are tested in `tests/test_engine.c`. The test target ships with **38 assertions, all green** on C99.
+
+The public API is one header: [`include/quilt/cell.h`](include/quilt/cell.h). The runtime is one file: [`src/engine.c`](src/engine.c). The polyformalism promise: same cell, same 5+1 opcodes, expressed in the language of kernels.
+
+```c
+#include <quilt/cell.h>
+
+quilt_engine_t e;
+quilt_cell_t cells[16];
+quilt_engine_init(&e, cells, 16);
+
+quilt_bind(&e, "a", quilt_v_int(2));
+quilt_bind(&e, "b", quilt_v_int(3));
+/* ... link, effect, view, tick, forget ... */
+
+quilt_engine_free(&e);
+```
+
+`make` produces `build/libquilt-c.a` (a static library) and `build/test_engine` (the test binary). No external dependencies. C99. Runs in kernel space.
