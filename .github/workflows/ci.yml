@@ -1,0 +1,23 @@
+name: build
+
+on:
+  push:
+    branches: [master, main, phase-216-*]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: |
+          make test
+      - name: Build static library
+        run: |
+          make
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quilt-c-build
+          path: build/
