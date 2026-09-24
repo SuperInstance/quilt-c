@@ -4,3 +4,20 @@ build/
 *.so
 *.dylib
 *.dSYM/
+
+# added by commit-and-push-all
+__pycache__/
+*.pyc
+*.pyd
+.pytest_cache/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+target/
+node_modules/
+.cache/
+.wrangler/
+.DS_Store
+*.log
+.env
