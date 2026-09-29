@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quilt-c"
+version = "0.1.0"
+description = "The minimum viable cell in C99 - dependency-closed kernel; verify with make verify (1,285 assertions, no network, no dependencies beyond a C99 compiler and python3)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "SuperInstance fleet" }]
+keywords = ["quilt", "cell", "c99", "kernel", "verifiable"]
+
+[project.scripts]
+# Runs the full assertion suite from a source tree (the kernel is C; the
+# verifier expects the source files alongside it — see the sdist).
+quilt-c-verify = "verify:main"
+
+[tool.setuptools]
+py-modules = ["verify"]
