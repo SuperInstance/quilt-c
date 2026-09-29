@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SuperInstance — intelligence should accrue in an external, auditable substrate</title>
+<meta name="description" content="4,856 repos. 33 stars. 4 forks. One artifact you can verify in 2.9 seconds.">
+<style>
+  :root{
+    --ink:#0b0b0c; --paper:#f4f1ea; --dim:#8a8578; --rule:#d6d0c2;
+    --ok:#2d6a4f; --warn:#9a3412; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--ink:#f4f1ea;--paper:#0b0b0c;--dim:#7d786d;--rule:#26252a;--ok:#7dd3a8;--warn:#f0a58a}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font:17px/1.62 var(--serif);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  header{padding:76px 0 40px;border-bottom:1px solid var(--rule)}
+  h1{font-size:clamp(30px,5.6vw,50px);line-height:1.06;margin:0 0 20px;letter-spacing:-.022em;font-weight:600}
+  h1 em{font-style:italic;color:var(--dim)}
+  .sub{font-size:19px;color:var(--dim);max-width:60ch;margin:0}
+  h2{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);
+     margin:60px 0 20px;font-family:var(--mono);font-weight:600}
+  p{margin:0 0 18px;max-width:66ch}
+  .rule{height:1px;background:var(--rule);border:0;margin:0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;
+        background:var(--rule);border:1px solid var(--rule);margin:26px 0}
+  .cell{background:var(--paper);padding:18px 16px}
+  .cell b{display:block;font:600 27px/1 var(--mono);letter-spacing:-.02em}
+  .cell span{display:block;margin-top:7px;font:11px/1.35 var(--mono);
+             letter-spacing:.05em;text-transform:uppercase;color:var(--dim)}
+  pre{background:var(--ink);color:var(--paper);padding:18px 20px;overflow-x:auto;
+      font:13.5px/1.65 var(--mono);border-radius:2px;margin:0 0 22px}
+  pre .c{opacity:.55}
+  pre .g{color:var(--ok)}
+  pre .w{color:var(--warn)}
+  code{font:13.5px var(--mono);background:color-mix(in srgb,var(--ink) 8%,transparent);
+       padding:1.5px 5px;border-radius:2px}
+  .row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;
+       border-bottom:1px solid var(--rule);font:13.5px/1.5 var(--mono);align-items:baseline}
+  .row span:first-child{color:var(--dim)}
+  .v{color:var(--ok);font-weight:600}
+  .v-bad{color:var(--warn);font-weight:600}
+  a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
+  a:hover{text-decoration-thickness:2px}
+  .btn{display:inline-block;padding:11px 20px;border:1px solid var(--ink);
+       font:600 13px var(--mono);letter-spacing:.05em;text-transform:uppercase;
+       text-decoration:none;margin:0 10px 10px 0;transition:.13s}
+  .btn:hover{background:var(--ink);color:var(--paper)}
+  .btn-p{background:var(--ink);color:var(--paper)}
+  .btn-p:hover{opacity:.85;background:var(--ink)}
+  .note{font-size:15px;color:var(--dim);border-left:2px solid var(--rule);padding-left:16px;margin:26px 0}
+  ol{padding-left:22px;max-width:66ch} li{margin-bottom:9px}
+  footer{padding:56px 0 80px;border-top:1px solid var(--rule);margin-top:64px;
+         font-size:14px;color:var(--dim)}
+  .tldr{border:1px solid var(--rule);padding:24px 26px;margin:34px 0;background:color-mix(in srgb,var(--ink) 3%,transparent)}
+  .tldr p{margin:0 0 12px}.tldr p:last-child{margin:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Intelligence should accrue in an <em>external, auditable substrate</em>, not inside an ever-larger model.</h1>
+  <p class="sub">The model doesn't get bigger. The exocortex gets richer.</p>
+</header>
+
+<div class="tldr">
+  <p><strong>I have 4,856 repositories and 33 stars.</strong> That ratio is the whole story, and it is not a marketing problem — it is an identifiability problem. Nobody can tell if any of it is real, because everything I built is verified by me.</p>
+  <p>So here is one artifact, and you check it yourself. <strong>2.9 seconds.</strong> I don't want you to trust my CI, my fleet, or my word for it.</p>
+  <p style="margin-top:18px">
+    <a class="btn btn-p" href="#run">Run the verifier</a>
+    <a class="btn" href="https://github.com/SuperInstance/quilt-c/releases/tag/v0.1.0">Release v0.1.0</a>
+  </p>
+</div>
+
+<h2>The check</h2>
+<pre><span class="c">$</span> git clone https://github.com/SuperInstance/quilt-c.git
+<span class="c">$</span> cd quilt-c &amp;&amp; git checkout v0.1.0
+<span class="c">$</span> make verify
+
+  <span class="g">[ok]</span> test          47 passed   0 failed
+  <span class="g">[ok]</span> test-proof  1059 passed   0 failed
+  <span class="g">[ok]</span> test-route    27 passed   0 failed
+  <span class="g">[ok]</span> test-crdt     28 passed   0 failed
+  <span class="g">[ok]</span> test-world    34 passed   0 failed
+  <span class="g">[ok]</span> test-time     41 passed   0 failed
+  <span class="g">[ok]</span> test-quf      49 passed   0 failed
+
+  <span class="g">verdict: VERIFIED</span>   1285 passed / 0 failed
+  receipt_sha256: <span class="c">37ee0737…</span></pre>
+<p>Then confirm the tag names that tree — also without trusting me:</p>
+<pre><span class="c">$</span> node release_verify.mjs --tag v0.1.0
+  <span class="g">[ok]</span> tag_resolves         <span class="c">-> adae27e496bb</span>
+  <span class="g">[ok]</span> tree_matches_receipt  <span class="c">now=be3be613… receipt=be3be613…</span>
+  <span class="g">[ok]</span> receipt_unaltered     <span class="c">recomputed=37ee073… recorded=37ee073…</span>
+  <span class="g">RELEASE VERIFIED</span></pre>
+<p class="note">The trust root is git object hashing. A tag points at one commit; that commit's tree is derivable by anyone. So the check needs no trust in the author — only in SHA-256 and git.</p>
+
+<h2>What it is</h2>
+<p>The Quilt cell-fabric runtime in C99. A spreadsheet where every cell is a live, addressable capability, and every transition is one of five opcodes:</p>
+<pre>BIND(cell, dials)   <span class="c">set dials, idempotent by content</span>
+LINK(c1, c2)        <span class="c">add an undirected edge</span>
+EFFECT(cell)        <span class="c">propagate dial[0] to neighbours</span>
+VIEW(cell)          <span class="c">return dials</span>
+TICK(fabric)        <span class="c">advance every dial, saturating at zero</span></pre>
+<p>Dependency closure: a C99 compiler. No packages, no lockfile, no network. There are ports in twelve languages, and the C one is the reference they are byte-checked against.</p>
+
+<h2>Install</h2>
+<p>Two packages, same verified kernel. Both run the full 1,285 assertions on install.</p>
+<pre><span class="c"># PyPI</span>
+pip install https://github.com/SuperInstance/quilt-c/releases/download/v0.1.0/quilt_c99_kernel-0.1.0-py3-none-any.whl
+python -c "import quilt_cell; print(quilt_cell.verify()['verdict'])"
+
+<span class="c"># npm</span>
+npm install https://github.com/SuperInstance/quilt-c/releases/download/v0.1.0/quilt-c99-kernel-0.1.0.tgz
+npm run verify</pre>
+<p>Registry publication is pending egress approval from this build environment; the signed release tarballs are downloadable now and are byte-identical to what would be published.</p>
+
+<h2>The honest part</h2>
+<p>I ran an externalisability audit on my own project. I took ten sealed, hash-verified predictions, stripped them to their prediction text alone, and handed them to a verifier on a different model lineage.</p>
+<div class="grid">
+  <div class="cell"><b>0/10</b><span>decidable from the text</span></div>
+  <div class="cell"><b>0/10</b><span>decidable by a stranger</span></div>
+  <div class="cell"><b>10/10</b><span>satisfiable by bookkeeping</span></div>
+  <div class="cell"><b>791</b><span>commits, 0 signed</span></div>
+</div>
+<p>Every one of them stated a failure condition and every hash verified. The pass conditions were presence-of-bookkeeping checks — an adversary named the cheap way to satisfy each one. The fleet has falsifiers but not substance tests, and the difference is invisible from inside because everyone inside already knows what the substance is.</p>
+<p>That is why this page is one runnable command instead of an index. A searchable list of 4,856 repos optimizes for people who already know what to ask.</p>
+
+<h2>What I am not asking you to do</h2>
+<ul>
+<li>Trust the fleet. The receipts are checkable, so check them.</li>
+<li>Read the doctrine first. Clone and run, then decide if the architecture is interesting.</li>
+<li>Take the self-description seriously. The 4,856-repo count is machine-counted, not designed.</li>
+</ul>
+
+<h2>The rest of the substrate</h2>
+<div class="row"><span>quilt-c — the C99 reference port</span><span class="v">1285 assertions, signed tag</span></div>
+<div class="row"><span>cell API — BIND/LINK/EFFECT/VIEW/TICK as HTTP methods</span><span>design probe, 13/13</span></div>
+<div class="row"><span>externalisability gate — 4 checks, fail-closed</span><span class="v-bad">0/10 pass today</span></div>
+<div class="row"><span>JEV known-answer control — instrument calibration</span><span>score type does not discriminate</span></div>
+<div class="row"><span>the fleet read — 23 writers, one oracle</span><span>18,617 bytes</span></div>
+
+<footer>
+  <p>Casey Digennaro. Commercial fisherman. Edge ML.<br>
+  "Boats' histories grow in value."</p>
+  <p style="margin-top:18px">
+    <a href="https://github.com/SuperInstance/quilt-c">source</a> ·
+    <a href="https://github.com/SuperInstance/quilt-c/releases/tag/v0.1.0">release</a> ·
+    <a href="https://github.com/SuperInstance/quilt-research-canons">the read</a> ·
+    <a href="https://github.com/SuperInstance/quilt-research-canons/blob/main/research/externalisability-audit-2026-09-29.md">the audit that indicted it</a>
+  </p>
+</footer>
+
+</div>
+</body>
+</html>
