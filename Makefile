@@ -21,7 +21,7 @@ TEST_TIME  = tests/test_time.c
 TEST_QUF   = tests/test_quf.c
 BUILD   = build
 
-.PHONY: all test test-proof test-route test-crdt test-world test-time test-quf test-all clean
+.PHONY: all test test-proof test-route test-crdt test-world test-time test-quf test-all verify clean
 
 all: $(BUILD)/libquilt-c.a
 
@@ -81,6 +81,12 @@ test-quf: $(BUILD)/test_quf
 	./$(BUILD)/test_quf
 
 test-all: test test-proof test-route test-crdt test-world test-time test-quf
+
+# The dependency-closed entry point. Runs every suite, counts every
+# assertion, and emits a sha256 receipt. Fail-closed: nonzero exit on any
+# failure. Requires only a C99 compiler and python3.
+verify:
+	python3 verify.py
 
 clean:
 	rm -rf $(BUILD)
