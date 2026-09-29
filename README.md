@@ -28,8 +28,8 @@ The canonical serialization is `type(1) || id(8 LE) || dials(32 LE) || neighbors
 
 | Lang | Hash | Tests |
 |------|------|-------|
+| **C99 (this port)** | ✓ | **1,285 assertions, 0 failures, one command** |
 | Python 3 | ✓ | 7/7 |
-| C99 (C99) | ✓ | manual |
 | Rust | ✓ | 6/6 |
 | Go | ✓ | 7/7 |
 | Zig | ✓ | 7/7 |
@@ -38,6 +38,38 @@ The canonical serialization is `type(1) || id(8 LE) || dials(32 LE) || neighbors
 | VHDL | ✓ | manual |
 | JavaScript | ✓ | live |
 | TypeScript | ✓ | 5/5 |
+
+## Run it in under 10 seconds
+
+```sh
+git clone https://github.com/SuperInstance/quilt-c.git
+cd quilt-c
+make verify
+```
+
+That is the whole dependency closure: a C99 compiler and `python3`. No packages, no
+lockfile, no network. `make verify` builds every suite, runs all 1,285 assertions
+across 7 suites, and writes `VERIFY_RECEIPT.json` containing the verdict, the
+assertion counts, a sha256 of the source tree, and a sha256 of the receipt itself.
+It is fail-closed: any failing suite exits nonzero.
+
+Receipt shape:
+
+```json
+{
+  "schema": "quilt-c/verify-receipt@v1",
+  "verdict": "VERIFIED",
+  "assertions_passed": 1285,
+  "assertions_failed": 0,
+  "suites": 7,
+  "source_tree_sha256": "8f027b799fc819b02c04392781ed854e...",
+  "receipt_sha256": "91d52448f0748c866d0facccbea3cb5e..."
+}
+```
+
+Anyone can re-run this and compare the tree hash. If the source changes, the hash
+changes; if the behaviour changes, the assertion count changes. That is the
+reproducibility contract, stated in one command.
 
 ## ✦ The educational root
 

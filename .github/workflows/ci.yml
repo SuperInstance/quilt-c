@@ -10,9 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build and test
+      - name: Verify (all 1,285 assertions + sha256 receipt)
         run: |
-          make test
+          make verify
+      - name: Show receipt
+        run: |
+          cat VERIFY_RECEIPT.json
       - name: Build static library
         run: |
           make
@@ -20,4 +23,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: quilt-c-build
-          path: build/
+          path: |
+            build/
+            VERIFY_RECEIPT.json

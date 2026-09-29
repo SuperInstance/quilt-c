@@ -21,3 +21,4 @@ node_modules/
 .DS_Store
 *.log
 .env
+VERIFY_RECEIPT.json
