@@ -10,7 +10,7 @@
 
 ## ✦ Why this port exists
 
-The C99 port of the Quilt. The C99 port is distinctive because of its position in the language hierarchy — `gcc-compileable, C99-idiomatic, byte-exact with the rest of the polyformalism.
+The C99 port is distinctive because of its position in the language hierarchy: gcc-compilable, C99-idiomatic, and byte-exact with the rest of the polyformalism.
 
 ## ✦ The 5 opcodes
 
