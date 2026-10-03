@@ -1,0 +1,45 @@
+name: publish-pypi
+
+# The external actor. Auth is THIS workflow's OIDC identity — no PyPI API
+# token exists in this repo or its secrets, by design.
+#
+# FALSIFIER: if PyPI has no pending trusted-publisher entry for
+#   owner=SuperInstance  repo=quilt-c  workflow=.github/workflows/publish.yml
+# the publish step fails with 403 from pypi.org. That failure is the action
+# item (configure the trusted publisher on PyPI); do NOT fix it by adding
+# an API token — that would rebuild the credential problem the Action exists
+# to retire.
+#
+# Fail-closed by construction: tag-triggered only, and nothing publishes
+# unless `make verify` passes first. A plain branch push must never publish.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Gate — verify before anything leaves the building
+        run: |
+          make verify
+          cat VERIFY_RECEIPT.json
+
+      - name: Build sdist (canonical artifact — the source IS the kernel)
+        run: |
+          python -m pip install --upgrade build
+          python -m build --sdist
+
+      - name: Publish to PyPI via OIDC trusted publisher
+        uses: pypa/gh-action-pypi-publish@release/v1

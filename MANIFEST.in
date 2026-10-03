@@ -1,0 +1,13 @@
+# sdist = the canonical artifact: the dependency-closed SOURCE ships whole.
+include Makefile
+include verify.py
+include LICENSE
+include README.md
+include SIGNING.md
+include fleet-signing-key.asc
+include release_verify.mjs
+recursive-include src *.c *.h
+recursive-include include *.h
+recursive-include tests *.c
+recursive-include bench *.c
+recursive-include assets *

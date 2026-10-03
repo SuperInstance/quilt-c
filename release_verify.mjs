@@ -50,23 +50,54 @@ function git(args, cwd = process.cwd()) {
 
 function sha256(s) { return createHash('sha256').update(s).digest('hex'); }
 
+/**
+ * Canonical JSON matching Python's json.dumps(obj, indent=2, sort_keys=True).
+ * Keys sorted at every level, 2-space indent, no trailing newline.
+ * Python's separators with indent are (',', ': ') — a comma+newline between items and
+ * ': ' after each key. That matches what JSON.stringify(obj, null, 2) emits.
+ */
+export function canonicalJson(value, depth = 0) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  const pad = '  '.repeat(depth + 1);
+  const closePad = '  '.repeat(depth);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '[]';
+    const inner = value.map(v => pad + canonicalJson(v, depth + 1)).join(',\n');
+    return '[\n' + inner + '\n' + closePad + ']';
+  }
+  const keys = Object.keys(value).sort();
+  if (keys.length === 0) return '{}';
+  const inner = keys
+    .map(k => pad + JSON.stringify(k) + ': ' + canonicalJson(value[k], depth + 1))
+    .join(',\n');
+  return '{\n' + inner + '\n' + closePad + '}';
+}
+
 /** Recompute the source-tree digest exactly as verify.py does. */
 export function treeDigest(root = process.cwd()) {
   const files = [];
   const walk = (dir, rel = '') => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (['.git', 'build', '.github', 'node_modules'].includes(entry.name)) continue;
+      // Exclusion set must match verify.py EXACTLY: .git, build, .github by name;
+      // VERIFY_RECEIPT.json by path; anything starting with .git by path.
+      // Note .gitignore is NOT excluded — verify.py includes it, so this must too.
+      if (['.git', 'build', '.github'].includes(entry.name)) continue;
       const abs = join(dir, entry.name);
       const r = rel ? `${rel}/${entry.name}` : entry.name;
       if (entry.isDirectory()) { walk(abs, r); continue; }
       if (!entry.isFile()) continue;
-      if (r === 'VERIFY_RECEIPT.json') continue;      // output, not input
-      if (r.endsWith('~') || r.endsWith('.swp')) continue;
+      if (r === 'VERIFY_RECEIPT.json' || r === 'verify_receipt.json') continue; // output, not input
+      if (r.startsWith('.git')) continue;                                          // matches verify.py
+      if (r.endsWith('~') || r.endsWith('.swp')) continue;                        // editor droppings, both sides
       files.push([r, sha256(rf(abs))]);
     }
   };
   walk(root);
-  files.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  // Sort by (path, digest) — matching Python's `sorted(files)` over (rel, digest) tuples.
+  // Sorting by path alone gives the same order for distinct paths, but the tiebreak must
+  // be explicit so this stays byte-identical to verify.py's digest. It only matters if two
+  // paths can ever collide, which they cannot, but "cannot" is not a spec.
+  files.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0)));
   const h = createHash('sha256');
   for (const [rel, dig] of files) { h.update(rel); h.update(dig); }
   return { digest: h.digest('hex'), count: files.length };
@@ -97,9 +128,23 @@ export function verifyRelease({ tag, commit, receipt, receiptFile }) {
   add('receipt_parses', !!r, r ? r.schema : 'unparseable');
   if (!r) return { ok: false, checks, verdict: 'UNPARSEABLE_RECEIPT' };
 
-  // 3. receipt self-hash (recompute over the body WITHOUT the hash field, sorted keys)
+  // 3. receipt self-hash. Must reproduce verify.py's serialisation EXACTLY:
+  //      body = json.dumps(receipt_without_hash, indent=2, sort_keys=True)
+  //      receipt_sha256 = sha256(body.encode()).hexdigest()
+  //
+  // THE BUG THIS REPLACES, because it is a trap worth naming:
+  //   JSON.stringify(body, Object.keys(body).sort(), 2)
+  // The second argument of JSON.stringify is a REPLACER, not a key-ordering directive.
+  // Passing an ARRAY there makes it a property *allowlist*, and allowlists do not recurse
+  // — so every nested object serialised to `{}`. `suites_detail` became seven empty braces,
+  // the canonical string was 333 bytes instead of 948, and the hash could never match.
+  // Every release check would have failed forever, and it would have looked like a
+  // tampered receipt rather than a bug in the checker.
+  //
+  // The correct JS for `sort_keys=True, indent=2` is an explicit canonicaliser.
   const { receipt_sha256: claimed, ...body } = r;
-  const recomputed = sha256(JSON.stringify(body, Object.keys(body).sort()));
+  const canonical = canonicalJson(body);
+  const recomputed = sha256(canonical);
   add('receipt_unaltered', recomputed === claimed,
     `recomputed=${recomputed.slice(0, 16)} recorded=${String(claimed).slice(0, 16)}`);
 
@@ -175,8 +220,15 @@ function main() {
   if (a.includes('--self-test')) {
     process.exit(selfTest() ? 0 : 2);
   }
-  const tag = a[a.indexOf('--tag') + 1];
-  const rf = a[a.indexOf('--receipt') + 1];
+  // NOTE: `a.indexOf('--tag') + 1` is a trap. When --tag is absent, indexOf returns -1,
+  // so -1 + 1 === 0 and the expression silently yields argv[0] — the word "--tag" itself.
+  // Read flags with an explicit presence check.
+  const flagVal = (name) => {
+    const i = a.indexOf(name);
+    return i === -1 ? undefined : a[i + 1];
+  };
+  const tag = flagVal('--tag') || 'HEAD';
+  const rf = flagVal('--receipt') || 'VERIFY_RECEIPT.json';
   console.log('quilt-c release verification');
   console.log('='.repeat(68));
   console.log(`  checkout: ${git('rev-parse HEAD').slice(0, 12)}  (${git('rev-parse --abbrev-ref HEAD')})`);
